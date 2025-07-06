@@ -1,0 +1,51 @@
+---
+postgres:
+  host: postgres.teamcity-server.svc.cluster.local
+  port: 5432
+  db: teamcity
+  user: teamcity
+  password: teamcity
+  connections: 200
+
+
+image:
+  server:
+    repository: jetbrains/teamcity-server
+    tag: latest
+    pullPolicy: Always
+  agent:
+    repository: jetbrains/teamcity-agent
+    tag: latest
+    pullPolicy: Always
+
+env:
+  server: {}
+    TEAMCITY_SERVER_MEM_OPTS: "-Xmx16g"
+    TEAMCITY_DATA_PATH: "/data/teamcity_server/nfs_mount"
+    # TEAMCITY_SERVER_OPTS: "-Dteamcity.caches.path=/data/teamcity_server/caches -Dteamcity.node.data.path=/data/teamcity_server/node_data"
+    TEAMCITY_SERVER_OPTS: "-Dteamcity.server.nodeId={{ <node_hostname> }} -Dteamcity.server.rootURL=http://<node_hostname>"
+    TEAMCITY_SERVER_OPTS: "-Dteamcity.node.data.path=/data/teamcity_server/node_data"
+    TEAMCITY_SERVER_OPTS: "-Dteamcity.server.responsibilities=CAN_PROCESS_BUILD_MESSAGES,CAN_CHECK_FOR_CHANGES,CAN_PROCESS_BUILD_TRIGGERS,CAN_PROCESS_USER_DATA_MODIFICATION_REQUESTS"
+    TEAMCITY_SERVER_OPTS: "-Dteamcity.server.responsibilities=CAN_PROCESS_BUILD_MESSAGES,CAN_CHECK_FOR_CHANGES,CAN_PROCESS_BUILD_TRIGGERS,CAN_PROCESS_USER_DATA_MODIFICATION_REQUESTS,MAIN_NODE"
+  agent: {}
+
+resources:
+  server:
+    limits:
+      memory: "18Gb"
+      cpu: "8"
+    requests:
+      memory: "1Gb"
+      cpu: "500m"
+  agent:
+    limits:
+      memory: "16Gb"
+      cpu: "16"
+    requests:
+      memory: "512Mb"
+      cpu: "250m"
+
+
+service:
+  type: ClusterIP
+  port: 80
