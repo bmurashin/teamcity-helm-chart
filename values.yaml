@@ -3,7 +3,7 @@ postgres:
   host: postgres.teamcity-server.svc.cluster.local
   port: 5432
   db: teamcity
-  user: teamcity
+  username: teamcity
   password: teamcity
   connections: 200
 
@@ -18,8 +18,13 @@ image:
     tag: latest
     pullPolicy: Always
 
+
+namespace:
+  agent: "teamcity-agent"
+  server: "teamcity-server"
+
 env:
-  server: {}
+  server:
     TEAMCITY_SERVER_MEM_OPTS: "-Xmx16g"
     TEAMCITY_DATA_PATH: "/data/teamcity_server/nfs_mount"
     # TEAMCITY_SERVER_OPTS: "-Dteamcity.caches.path=/data/teamcity_server/caches -Dteamcity.node.data.path=/data/teamcity_server/node_data"
@@ -39,13 +44,8 @@ resources:
       cpu: "500m"
   agent:
     limits:
-      memory: "16Gb"
+      memory: "16Gi"
       cpu: "16"
     requests:
-      memory: "512Mb"
+      memory: "512Mi"
       cpu: "250m"
-
-
-service:
-  type: ClusterIP
-  port: 80

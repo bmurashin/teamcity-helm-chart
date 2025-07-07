@@ -1,29 +1,31 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "teamcity-helm-chart.fullname" . }}
+  name: teamcity-agent
+  namespace: {{ .Values.namespace.agent }}
 spec:
   type: ClusterIP
   ports:
     - port: 9090
   selector:
-    app: {{ include "teamcity-helm-chart.name" . }}
+    app: teamcity-agent
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: teamcity-agent
+  namespace: {{ .Values.namespace.agent }}
 spec:
   replicas: 0
   selector:
     matchLabels:
-      app: {{ include "teamcity-helm-chart.name" . }}
+      app: teamcity-agent
   template:
     metadata:
       labels:
-        app: {{ include "teamcity-helm-chart.name" . }}
+        app: teamcity-agent
     spec:
-      restartPolicy: Never
+      # restartPolicy: Never # "Never" is not supported in deployments O_o, hope TC will make a good job scalling the pod
       containers:
         - name: teamcity-agent
           # Use the image repository and tag from values.yaml
@@ -38,5 +40,4 @@ spec:
             - name: agent-port
               containerPort: 9090
           resources:
-            limits:
-              {{- .Values.resources.agent | toYaml | nindent 14 }}
+            {{- .Values.resources.agent | toYaml | nindent 12 }}
