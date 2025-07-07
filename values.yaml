@@ -37,10 +37,10 @@ env:
 resources:
   server:
     limits:
-      memory: "18Gb"
+      memory: "18Gi"
       cpu: "8"
     requests:
-      memory: "1Gb"
+      memory: "1Gi"
       cpu: "500m"
   agent:
     limits:
