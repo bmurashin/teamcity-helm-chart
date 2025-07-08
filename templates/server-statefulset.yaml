@@ -40,3 +40,7 @@ spec:
               containerPort: 8111
           resources:
             {{- .Values.resources.server | toYaml | nindent 12 }}
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: server-data
