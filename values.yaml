@@ -23,16 +23,18 @@ namespace:
   agent: "teamcity-agent"
   server: "teamcity-server"
 
+
 env:
   server:
     TEAMCITY_SERVER_MEM_OPTS: "-Xmx16g"
-    TEAMCITY_DATA_PATH: "/data/teamcity_server/nfs_mount"
+    TEAMCITY_DATA_PATH: "/mnt/data"
     # TEAMCITY_SERVER_OPTS: "-Dteamcity.caches.path=/data/teamcity_server/caches -Dteamcity.node.data.path=/data/teamcity_server/node_data"
     TEAMCITY_SERVER_OPTS: "-Dteamcity.server.nodeId={{ <node_hostname> }} -Dteamcity.server.rootURL=http://<node_hostname>"
     TEAMCITY_SERVER_OPTS: "-Dteamcity.node.data.path=/data/teamcity_server/node_data"
     TEAMCITY_SERVER_OPTS: "-Dteamcity.server.responsibilities=CAN_PROCESS_BUILD_MESSAGES,CAN_CHECK_FOR_CHANGES,CAN_PROCESS_BUILD_TRIGGERS,CAN_PROCESS_USER_DATA_MODIFICATION_REQUESTS"
     TEAMCITY_SERVER_OPTS: "-Dteamcity.server.responsibilities=CAN_PROCESS_BUILD_MESSAGES,CAN_CHECK_FOR_CHANGES,CAN_PROCESS_BUILD_TRIGGERS,CAN_PROCESS_USER_DATA_MODIFICATION_REQUESTS,MAIN_NODE"
   agent: {}
+
 
 resources:
   server:

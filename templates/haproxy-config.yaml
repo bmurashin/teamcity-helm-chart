@@ -53,8 +53,8 @@ data:
 
         default-server check fall 6 inter 10000 downinter 5000
 
-        server NODE1 {node1_hostname} cookie {node1_id}
-        server NODE2 {node2_hostname} cookie {node2_id}
+        server NODE1 server-0.nodes.teamcity-server.svc.cluster.local cookie server-0
+        server NODE2 server-1.nodes.teamcity-server.svc.cluster.local cookie server-1
 
     backend clients_supporting_cookies
         # this backend is for the browsers without "X-TeamCity-Node-Id-Cookie"
@@ -73,8 +73,8 @@ data:
 
         default-server check fall 6 inter 10000 downinter 5000 on-marked-down shutdown-sessions
 
-        server NODE1 {node1_hostname} cookie n1 weight 50
-        server NODE2 {node2_hostname} cookie n2 weight 50
+        server NODE1 server-0.nodes.teamcity-server.svc.cluster.local cookie n1 weight 50
+        server NODE2 server-1.nodes.teamcity-server.svc.cluster.local cookie n2 weight 50
 
     backend clients_not_supporting_cookies
         # for compatibility reasons requests from non browser clients are always
@@ -92,5 +92,5 @@ data:
 
         default-server check fall 6 inter 10000 downinter 5000 on-marked-down shutdown-sessions
 
-        server NODE1 {node1_hostname}
-        server NODE2 {node2_hostname}
+        server NODE1 server-0.nodes.teamcity-server.svc.cluster.local
+        server NODE2 server-1.nodes.teamcity-server.svc.cluster.local

@@ -3,8 +3,8 @@
 # 
 # kubectl create -f ./dev/nfs-pvc-test.yaml
 # kubectl -n teamcity-server exec nginx-nfs-example -- bash -c "findmnt /var/www -o TARGET,SOURCE,FSTYPE"
-# kubectl -n teamcity-server exec nginx-nfs-example -- bash -c "echo test > /var/www/test"
-# kubectl -n teamcity-server exec -it nfs-server-d9ff9cb84-nqfnx -- bash -c "cat /exports/test"
+# kubectl -n teamcity-server exec nginx-nfs-example -- bash -c "echo test-text > /var/www/test-file"
+# kubectl -n teamcity-server exec -it nfs-server-d9ff9cb84-nqfnx -- bash -c "cat /exports/test-file"
 # kubectl delete -f ./dev/nfs-pvc-test.yaml
 # 
 # https://raw.githubusercontent.com/kubernetes-csi/csi-driver-nfs/master/deploy/example/nfs-provisioner/nfs-server.yaml
@@ -28,7 +28,7 @@ spec:
     driver: nfs.csi.k8s.io
     # volumeHandle format: {nfs-server-address}#{sub-dir-name}#{share-name}
     # make sure this value is unique for every share in the cluster
-    volumeHandle: nfs-server.teamcity-server.svc.cluster.local/share#pv-nginx#
+    volumeHandle: nfs-server.teamcity-server.svc.cluster.local/share##
     volumeAttributes:
       server: nfs-server.teamcity-server.svc.cluster.local
       share: /

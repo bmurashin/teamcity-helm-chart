@@ -31,6 +31,10 @@ spec:
           image: "{{ .Values.image.server.repository }}:{{ .Values.image.server.tag }}"
           imagePullPolicy: {{ .Values.image.server.pullPolicy }}
           env:
+            - name: POD_INDEX
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.labels['apps.kubernetes.io/pod-index']
             {{- range $key, $val := .Values.env.server }}
             - name: "{{ $key }}"
               value: "{{ $val }}"
@@ -40,6 +44,11 @@ spec:
               containerPort: 8111
           resources:
             {{- .Values.resources.server | toYaml | nindent 12 }}
+          volumeMounts:
+            - mountPath: {{ .Values.env.server.TEAMCITY_DATA_PATH }}
+              name: data
+      securityContext:
+        fsGroup: 1000   # tcuser uid
       volumes:
         - name: data
           persistentVolumeClaim:
