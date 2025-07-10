@@ -30,6 +30,11 @@ spec:
         - name: teamcity-server
           image: "{{ .Values.image.server.repository }}:{{ .Values.image.server.tag }}"
           imagePullPolicy: {{ .Values.image.server.pullPolicy }}
+          command: [ "/bin/bash" ]
+          # this will prepare a variable SERVER_OPTS, holding another variable name, like TEAMCITY_SERVER_OPTS_NODE_0
+          # then expand it (if defined) using bash ${!var} indirection - or fallback to $TEAMCITY_SERVER_OPTS_DEFAULT
+          # and then expand it once more using eval to substitute ${POD_INDEX} with actual values to make correct nodeId and rootURL
+          args: [ "-c", 'SERVER_OPTS="TEAMCITY_SERVER_OPTS_NODE_${POD_INDEX}"  &&  export TEAMCITY_SERVER_OPTS=$(eval echo ${!SERVER_OPTS:-$TEAMCITY_SERVER_OPTS_DEFAULT})  &&  /run-server.sh']
           env:
             - name: POD_INDEX
               valueFrom:
@@ -39,6 +44,18 @@ spec:
             - name: "{{ $key }}"
               value: "{{ $val }}"
             {{- end }}
+            - name: "TEAMCITY_DB_URL"
+              value: "jdbc:postgresql://{{ .Values.postgres.host }}:{{ .Values.postgres.port }}/{{ .Values.postgres.db }}"
+            - name: "TEAMCITY_DB_USER"
+              valueFrom:
+                secretKeyRef:
+                  key: username
+                  name: {{ .Release.Name }}-pgauth
+            - name: "TEAMCITY_DB_PASSWORD"
+              valueFrom:
+                secretKeyRef:
+                  key: password
+                  name: {{ .Release.Name }}-pgauth
           ports:
             - name: http
               containerPort: 8111

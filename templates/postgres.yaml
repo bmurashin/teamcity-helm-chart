@@ -29,11 +29,17 @@ spec:
           image: postgres:16
           env:
             - name: POSTGRES_DB
-              value: teamcity
+              value: {{ .Values.postgres.db }}
             - name: POSTGRES_USER
-              value: teamcity
+              valueFrom:
+                secretKeyRef:
+                  key: username
+                  name: {{ .Release.Name }}-pgauth
             - name: POSTGRES_PASSWORD
-              value: teamcitypass
+              valueFrom:
+                secretKeyRef:
+                  key: password
+                  name: {{ .Release.Name }}-pgauth
           ports:
             - containerPort: 5432
           volumeMounts:

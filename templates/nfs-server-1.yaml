@@ -74,10 +74,16 @@ spec:
       labels:
         app: nfs-server
     spec:
+      terminationGracePeriodSeconds: 60
       containers:
         - name: nfs-server
           #image: k8s.gcr.io/volume-nfs:0.8
           image: alphayax/docker-volume-nfs:latest
+          # give other pods time to release PVCs before nfs-server is stopped
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/bin/sh", "-c", "sleep 30"]
           ports:
           - name: nfs
             containerPort: 2049

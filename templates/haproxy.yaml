@@ -9,11 +9,11 @@ spec:
   ports:
     - name: http
       port: 80
-      targetPort: 80
-    - name: https
-      port: 443
-      targetPort: 443
+    # - name: https
+    #   port: 443
+    
 ---
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -34,7 +34,7 @@ spec:
           image: haproxy:2.9
           ports:
             - containerPort: 80
-            - containerPort: 443
+            # - containerPort: 443
           volumeMounts:
             - name: haproxy-config
               mountPath: /usr/local/etc/haproxy/haproxy.cfg

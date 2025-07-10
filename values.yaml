@@ -26,13 +26,22 @@ namespace:
 
 env:
   server:
+    # How many server nodes you want to run
+    REPLICAS: "2"
     TEAMCITY_SERVER_MEM_OPTS: "-Xmx16g"
     TEAMCITY_DATA_PATH: "/mnt/data"
-    # TEAMCITY_SERVER_OPTS: "-Dteamcity.caches.path=/data/teamcity_server/caches -Dteamcity.node.data.path=/data/teamcity_server/node_data"
-    TEAMCITY_SERVER_OPTS: "-Dteamcity.server.nodeId={{ <node_hostname> }} -Dteamcity.server.rootURL=http://<node_hostname>"
-    TEAMCITY_SERVER_OPTS: "-Dteamcity.node.data.path=/data/teamcity_server/node_data"
-    TEAMCITY_SERVER_OPTS: "-Dteamcity.server.responsibilities=CAN_PROCESS_BUILD_MESSAGES,CAN_CHECK_FOR_CHANGES,CAN_PROCESS_BUILD_TRIGGERS,CAN_PROCESS_USER_DATA_MODIFICATION_REQUESTS"
-    TEAMCITY_SERVER_OPTS: "-Dteamcity.server.responsibilities=CAN_PROCESS_BUILD_MESSAGES,CAN_CHECK_FOR_CHANGES,CAN_PROCESS_BUILD_TRIGGERS,CAN_PROCESS_USER_DATA_MODIFICATION_REQUESTS,MAIN_NODE"
+    # TEAMCITY_SERVER_OPTS: "-Dteamcity.caches.path=/data/teamcity_server/caches"
+    # TEAMCITY_SERVER_OPTS: "-Dteamcity.node.data.path=/mnt/node_data"
+    # OPTS to be used if none defined for a specific node
+    TEAMCITY_SERVER_OPTS_DEFAULT:
+      -Dteamcity.server.nodeId=server-${POD_INDEX} -Dteamcity.server.rootURL=http://server-${POD_INDEX}.nodes.teamcity-server.svc.cluster.local
+      -Dteamcity.server.responsibilities=CAN_PROCESS_BUILD_MESSAGES,CAN_CHECK_FOR_CHANGES,CAN_PROCESS_BUILD_TRIGGERS,CAN_PROCESS_USER_DATA_MODIFICATION_REQUESTS
+    # OPTS to be used for node 0 (zero-based ordinal in the StatefulSet)
+    TEAMCITY_SERVER_OPTS_NODE_0:
+      -Dteamcity.server.nodeId=server-${POD_INDEX} -Dteamcity.server.rootURL=http://server-${POD_INDEX}.nodes.teamcity-server.svc.cluster.local
+      -Dteamcity.server.responsibilities=CAN_PROCESS_BUILD_MESSAGES,CAN_CHECK_FOR_CHANGES,CAN_PROCESS_BUILD_TRIGGERS,CAN_PROCESS_USER_DATA_MODIFICATION_REQUESTS,MAIN_NODE
+    # OPTS to be used for second node
+    # TEAMCITY_SERVER_OPTS_NODE_1:
   agent: {}
 
 

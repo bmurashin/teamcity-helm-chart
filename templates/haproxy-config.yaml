@@ -2,6 +2,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: haproxy-config
+  namespace: {{ .Values.namespace.server }}
 data:
   haproxy.cfg: |
     defaults
@@ -53,8 +54,9 @@ data:
 
         default-server check fall 6 inter 10000 downinter 5000
 
-        server NODE1 server-0.nodes.teamcity-server.svc.cluster.local cookie server-0
-        server NODE2 server-1.nodes.teamcity-server.svc.cluster.local cookie server-1
+        {{- range until (int .Values.env.server.REPLICAS) }}
+        server NODE{{ . }} server-0.nodes.teamcity-server.svc.cluster.local cookie server-{{ . }}
+        {{- end }}
 
     backend clients_supporting_cookies
         # this backend is for the browsers without "X-TeamCity-Node-Id-Cookie"
@@ -73,8 +75,9 @@ data:
 
         default-server check fall 6 inter 10000 downinter 5000 on-marked-down shutdown-sessions
 
-        server NODE1 server-0.nodes.teamcity-server.svc.cluster.local cookie n1 weight 50
-        server NODE2 server-1.nodes.teamcity-server.svc.cluster.local cookie n2 weight 50
+        {{- range until (int .Values.env.server.REPLICAS) }}
+        server NODE{{ . }} server-{{ . }}.nodes.teamcity-server.svc.cluster.local cookie n{{ . }} weight 50
+        {{- end }}
 
     backend clients_not_supporting_cookies
         # for compatibility reasons requests from non browser clients are always
@@ -92,5 +95,6 @@ data:
 
         default-server check fall 6 inter 10000 downinter 5000 on-marked-down shutdown-sessions
 
-        server NODE1 server-0.nodes.teamcity-server.svc.cluster.local
-        server NODE2 server-1.nodes.teamcity-server.svc.cluster.local
+        {{- range until (int .Values.env.server.REPLICAS) }}
+        server NODE{{ . }} server-{{ . }}.nodes.teamcity-server.svc.cluster.local
+        {{- end }}
