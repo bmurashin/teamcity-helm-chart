@@ -27,7 +27,7 @@ namespace:
 env:
   server:
     # How many server nodes you want to run
-    REPLICAS: "2"
+    REPLICAS: 2
     TEAMCITY_SERVER_MEM_OPTS: "-Xmx16g"
     TEAMCITY_DATA_PATH: "/mnt/data"
     # TEAMCITY_SERVER_OPTS: "-Dteamcity.caches.path=/data/teamcity_server/caches"
@@ -48,15 +48,15 @@ env:
 resources:
   server:
     limits:
-      memory: "18Gi"
-      cpu: "8"
+      memory: "2Gi"
+      cpu: "2"
     requests:
-      memory: "1Gi"
+      memory: "512Mi"
       cpu: "500m"
   agent:
     limits:
-      memory: "16Gi"
-      cpu: "16"
+      memory: "2Gi"
+      cpu: "2"
     requests:
       memory: "512Mi"
       cpu: "250m"

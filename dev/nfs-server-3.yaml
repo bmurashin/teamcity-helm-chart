@@ -1,26 +1,23 @@
-# https://raw.githubusercontent.com/kubernetes-csi/csi-driver-nfs/master/deploy/example/nfs-provisioner/nfs-server.yaml
----
-kind: Service
 apiVersion: v1
+kind: Service
 metadata:
   name: nfs-server
   namespace: {{ .Values.namespace.server }}
-  labels:
-    app: nfs-server
 spec:
-  type: ClusterIP  # use "LoadBalancer" to get a public ip
+  ports:
+    - port: 2049
+      name: nfs
+    - name: mountd
+      port: 20048
+    - name: rpcbind
+      port: 111
   selector:
     app: nfs-server
-  ports:
-    - name: tcp-2049
-      port: 2049
-      protocol: TCP
-    - name: udp-111
-      port: 111
-      protocol: UDP
+
 ---
-kind: Deployment
+
 apiVersion: apps/v1
+kind: Deployment
 metadata:
   name: nfs-server
   namespace: {{ .Values.namespace.server }}
@@ -31,36 +28,33 @@ spec:
       app: nfs-server
   template:
     metadata:
-      name: nfs-server
       labels:
         app: nfs-server
     spec:
-      nodeSelector:
-        "kubernetes.io/os": linux
       terminationGracePeriodSeconds: 60
       containers:
         - name: nfs-server
-          image: itsthenetwork/nfs-server-alpine:latest
+          image: erichough/nfs-server:latest
           # give server pods time to release PVCs before nfs-server is stopped
           lifecycle:
             preStop:
               exec:
                 command: ["/bin/sh", "-c", "sleep 30"]
+          ports:
+          - name: nfs
+            containerPort: 2049
+          - name: mountd
+            containerPort: 20048
+          - name: rpcbind
+            containerPort: 111
+          securityContext:
+            privileged: true
           env:
-            - name: SHARED_DIRECTORY
-              value: "/exports"
+            - name: NFS_EXPORT_0
+              value: '/exports *(rw,fsid=0,insecure,no_subtree_check)'
           volumeMounts:
             - mountPath: /exports
               name: nfs-vol
-          securityContext:
-            privileged: true
-          ports:
-            - name: tcp-2049
-              containerPort: 2049
-              protocol: TCP
-            - name: udp-111
-              containerPort: 111
-              protocol: UDP
       volumes:
         - name: nfs-vol
           emptyDir:

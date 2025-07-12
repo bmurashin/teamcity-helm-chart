@@ -24,9 +24,15 @@ spec:
       labels:
         app: postgres
     spec:
+      terminationGracePeriodSeconds: 40
       containers:
         - name: postgres
           image: postgres:16
+          # give server pods time to close connections
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/bin/sh", "-c", "sleep 10"]
           env:
             - name: POSTGRES_DB
               value: {{ .Values.postgres.db }}

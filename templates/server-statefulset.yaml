@@ -17,7 +17,7 @@ metadata:
   namespace: {{ .Values.namespace.server }}
 spec:
   serviceName: nodes
-  replicas: 2
+  replicas: {{ .Values.env.server.REPLICAS }}
   selector:
     matchLabels:
       app: teamcity-server
@@ -26,6 +26,20 @@ spec:
       labels:
         app: teamcity-server
     spec:
+      initContainers:
+        - name: init-main
+          image: badouralix/curl-jq
+          env:
+            - name: POD_INDEX
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.labels['apps.kubernetes.io/pod-index']
+          # exit immidiately if this is the main node (index 0)
+          # hold secondary nodes from starting until the main node is initialized
+          command: 
+            - sh
+            - -c
+            - "[[ ${POD_INDEX} == 0 ]] && echo 'Main node, proceed' || while [[ $(curl --silent --output /dev/null --write-out '%{http_code}' server-0.nodes.{{ .Values.namespace.server }}.svc.cluster.local:8111/healthCheck/ready ) != '200' ]]; do echo 'Waiting for main node to initialize'; sleep 10; done"
       containers:
         - name: teamcity-server
           image: "{{ .Values.image.server.repository }}:{{ .Values.image.server.tag }}"
