@@ -1,3 +1,4 @@
+# headless service for statefulset
 apiVersion: v1
 kind: Service
 metadata:
@@ -9,7 +10,26 @@ spec:
   clusterIP: None
   selector:
     app: teamcity-server
+
 ---
+
+# service for ingress
+apiVersion: v1
+kind: Service
+metadata:
+  name: nodes2
+  namespace: teamcity-server
+  labels:
+    app: teamcity-server
+spec:
+  selector:
+    app: teamcity-server
+  ports:
+    - name: tc
+      port: 8111
+
+---
+
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
