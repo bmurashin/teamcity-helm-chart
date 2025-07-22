@@ -36,3 +36,4 @@ subjects:
   # if you use Service account
   - kind: ServiceAccount
     name: teamcity
+    namespace: {{ .Values.namespace.server }}

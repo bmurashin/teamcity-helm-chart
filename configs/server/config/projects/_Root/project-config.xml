@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" uuid="4f99f255-fab3-427d-8668-1a63d08ea5b7" xsi:noNamespaceSchemaLocation="https://www.jetbrains.com/teamcity/schemas/2025.3/project-config.xsd">
+  <name>&lt;Root project&gt;</name>
+  <description>Contains all other projects</description>
+  <project-extensions>
+    <extension id="PROJECT_EXT_1" type="ReportTab">
+      <parameters>
+        <param name="startPage" value="coverage.zip!index.html" />
+        <param name="title" value="Code Coverage" />
+        <param name="type" value="BuildReportTab" />
+      </parameters>
+    </extension>
+    <extension id="PROJECT_EXT_2" type="CloudImage">
+      <parameters>
+        <param name="agent_pool_id" value="0" />
+        <param name="imageDescription" value="Use deployment: teamcity-agent" />
+        <param name="podTemplateMode" value="deployment-base" />
+        <param name="profileId" value="kube-1" />
+        <param name="source-id" value="teamcity-agent" />
+        <param name="sourceDeployment" value="teamcity-agent" />
+      </parameters>
+    </extension>
+    <extension id="kube-1" type="CloudProfile">
+      <parameters>
+        <param name="apiServerUrl" value="{{ .Values.k8s.api }}" />
+        <param name="authStrategy" value="token" />
+        <param name="cloud-code" value="kube" />
+        <param name="description" value="" />
+        <param name="enabled" value="true" />
+        <param name="name" value="k8s-teamcity-agent" />
+        <param name="namespace" value="{{ .Values.namespace.agent }}" />
+        <param name="profileId" value="kube-1" />
+        <param name="secure:authToken" value="${TOKEN}" />
+        <param name="terminate-idle-time" value="30" />
+      </parameters>
+    </extension>
+  </project-extensions>
+  <cleanup>
+    <options>
+      <option name="preventDependenciesArtifactsFromCleanup" value="false" />
+    </options>
+  </cleanup>
+</project>
+

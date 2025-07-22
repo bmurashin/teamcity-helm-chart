@@ -1,6 +1,10 @@
 ---
+namespace:
+  agent: "teamcity-agent-new"
+  server: "teamcity-server-new"
+
 postgres:
-  host: postgres.teamcity-server.svc.cluster.local
+  host: postgres.teamcity-server-new.svc.cluster.local
   port: 5432
   db: teamcity
   username: teamcity
@@ -10,10 +14,18 @@ postgres:
 ingress:
   enabled: true
 
+k8s:
+  api: "https://k8s-dns-name"
+
+server:
+  admin:
+    username: admin
+    password: my-strong-password
+
 image:
   server:
     repository: jetbrains/teamcity-server
-    tag: latest
+    tag: 2025.03.3
     pullPolicy: Always
   agent:
     repository: jetbrains/teamcity-agent
@@ -21,26 +33,21 @@ image:
     pullPolicy: Always
 
 
-namespace:
-  agent: "teamcity-agent"
-  server: "teamcity-server"
-
-
 env:
   server:
     # How many server nodes you want to run
-    REPLICAS: 2
+    REPLICAS: 1
     TEAMCITY_SERVER_MEM_OPTS: "-Xmx16g"
     TEAMCITY_DATA_PATH: "/mnt/data"
     # TEAMCITY_SERVER_OPTS: "-Dteamcity.caches.path=/data/teamcity_server/caches"
     # TEAMCITY_SERVER_OPTS: "-Dteamcity.node.data.path=/mnt/node_data"
     # OPTS to be used if none defined for a specific node
     TEAMCITY_SERVER_OPTS_DEFAULT:
-      -Dteamcity.server.nodeId=server-${POD_INDEX} -Dteamcity.server.rootURL=http://server-${POD_INDEX}.nodes.teamcity-server.svc.cluster.local
+      -Dteamcity.server.nodeId=server-${POD_INDEX} -Dteamcity.server.rootURL=http://server-${POD_INDEX}.nodes.${SERVER_NAMESPACE}.svc.cluster.local
       -Dteamcity.server.responsibilities=CAN_PROCESS_BUILD_MESSAGES,CAN_CHECK_FOR_CHANGES,CAN_PROCESS_BUILD_TRIGGERS,CAN_PROCESS_USER_DATA_MODIFICATION_REQUESTS
     # OPTS to be used for node 0 (zero-based ordinal in the StatefulSet)
     TEAMCITY_SERVER_OPTS_NODE_0:
-      -Dteamcity.server.nodeId=server-${POD_INDEX} -Dteamcity.server.rootURL=http://server-${POD_INDEX}.nodes.teamcity-server.svc.cluster.local
+      -Dteamcity.server.nodeId=server-${POD_INDEX} -Dteamcity.server.rootURL=http://server-${POD_INDEX}.nodes.${SERVER_NAMESPACE}.svc.cluster.local
       -Dteamcity.server.responsibilities=CAN_PROCESS_BUILD_MESSAGES,CAN_CHECK_FOR_CHANGES,CAN_PROCESS_BUILD_TRIGGERS,CAN_PROCESS_USER_DATA_MODIFICATION_REQUESTS,MAIN_NODE
     # OPTS to be used for second node
     # TEAMCITY_SERVER_OPTS_NODE_1:

@@ -55,7 +55,7 @@ data:
         default-server check fall 6 inter 10000 downinter 5000
 
         {{- range until (int .Values.env.server.REPLICAS) }}
-        server NODE{{ . }} server-{{ . }}.nodes.teamcity-server.svc.cluster.local:8111 cookie server-{{ . }}
+        server NODE{{ . }} server-{{ . }}.nodes.{{ $.Values.namespace.server }}.svc.cluster.local:8111 cookie server-{{ . }}
         {{- end }}
 
     backend clients_supporting_cookies
@@ -76,7 +76,7 @@ data:
         default-server check fall 6 inter 10000 downinter 5000 on-marked-down shutdown-sessions
 
         {{- range until (int .Values.env.server.REPLICAS) }}
-        server NODE{{ . }} server-{{ . }}.nodes.teamcity-server.svc.cluster.local:8111 cookie n{{ . }} weight 50
+        server NODE{{ . }} server-{{ . }}.nodes.{{ $.Values.namespace.server }}.svc.cluster.local:8111 cookie n{{ . }} weight 50
         {{- end }}
 
     backend clients_not_supporting_cookies
@@ -96,5 +96,5 @@ data:
         default-server check fall 6 inter 10000 downinter 5000 on-marked-down shutdown-sessions
 
         {{- range until (int .Values.env.server.REPLICAS) }}
-        server NODE{{ . }} server-{{ . }}.nodes.teamcity-server.svc.cluster.local:8111
+        server NODE{{ . }} server-{{ . }}.nodes.{{ $.Values.namespace.server }}.svc.cluster.local:8111
         {{- end }}

@@ -1,0 +1,30 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: teamcity-pg-dump
+  namespace: {{ $.Values.namespace.server }}
+immutable: true
+data:
+{{ ($.Files.Glob "configs/postgres/*").AsConfig | indent 2 }}
+
+---
+
+{{- $processedDict := dict }}
+{{- range $path, $bytes := .Files.Glob "configs/server/**" }}
+{{- $name := (dir $path) }}
+{{- if not (hasKey $processedDict $name) }}
+{{- $_ := set $processedDict $name "true" }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config-{{ $name | sha1sum }}
+  namespace: {{ $.Values.namespace.server }}
+  annotations:
+    folder: {{ $name | trimPrefix "configs/server/" }}
+immutable: true
+data:
+{{ tpl ($.Files.Glob (printf "%s/*" $name)).AsConfig $ | indent 2 }}
+---
+{{- end }}
+{{- end }}

@@ -18,31 +18,15 @@ Edit values.yaml to your favor and
 helm install teamcity-helm-chart .
 ```
 
-To initialize the main node, execute `kubectl -n teamcity-server port-forward server-0 8111` and go to http://localhost:8111/
+Until TC server is initialized (this will happen automatically), HAProxy at http://{{ ingress-dns-name }}/ will return `"503 Service Unavailable"` - just wait some time and refresh the page
 
-After that TeamCity cluster can be access using HAProxy at http://{{ ingress-dns-name }}/  
-If that doesn't work, use `kubectl -n teamcity-server port-forward svc/nodes2 8111` and go to http://localhost:8111/
+If you don't use ingress, execute `kubectl -n teamcity-server port-forward svc/nodes2 8111` and go to http://localhost:8111/
 
-### To setup build agents
+### Build agents
 
-Go to `Admin -> Projects -> Root project -> Cloud Profiles -> Create new profile -> Kubernetes Agents` (Don't confuse with _agentless kubernetes_ option)
+You will find automatically set up and ready to run kubernetes profile in the Root project, that can be shared with any other project
 
-| Field | Value |
-|-|-|
-| Server URL: | http://haproxy.teamcity-server.svc.cluster.local |
-| Kubernetes API server URL: | e.g. https://kubernetes.docker.internal:6443 - find your URL using `kubectl config view` |
-| Kubernetes namespace: | teamcity-agent |
-| Authentication strategy: | Token |
-| Token: | get token using `kubectl -n teamcity-agent get secret teamcity-secret -o=jsonpath='{.data.token}' \| base64 --decode` |
-
-Press `Add image`
-| Field | Value |
-|-|-|
-| Pod specification: | Use pod template from deployment |
-| Deployment name: | teamcity-agent |
-| Agent pool: | Default |
-
-Press `Create` - soon you'll see `1 running` agent
+For details, go to `Admin -> Projects -> Root project -> Cloud Profiles` and pick `k8s-teamcity-agent` profile
 
 **Congrats, You're all set**
 
