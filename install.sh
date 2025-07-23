@@ -37,6 +37,23 @@ if [ "$ADMIN_PASSWORD" = "" ]; then
 fi
 
 echo
+echo "Define namespaces"
+echo
+
+echo -n "    server [teamcity-server]: "
+read TEAMCITY_SERVER_NAMESPACE
+TEAMCITY_SERVER_NAMESPACE=${TEAMCITY_SERVER_NAMESPACE:-teamcity-server}
+
+echo -n "    agent [teamcity-agent]: "
+read TEAMCITY_AGENT_NAMESPACE
+TEAMCITY_AGENT_NAMESPACE=${TEAMCITY_AGENT_NAMESPACE:-teamcity-agent}
+
+
+echo
 helm install teamcity . \
+  --namespace "${TEAMCITY_SERVER_NAMESPACE}" \
+  --create-namespace \
   --set server.admin.username="${ADMIN_USERNAME}" \
-  --set server.admin.password="${ADMIN_PASSWORD}"
+  --set server.admin.password="${ADMIN_PASSWORD}" \
+  --set namespace.server="${TEAMCITY_SERVER_NAMESPACE}" \
+  --set namespace.agent="${TEAMCITY_AGENT_NAMESPACE}"

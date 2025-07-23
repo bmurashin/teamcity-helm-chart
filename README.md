@@ -34,5 +34,5 @@ For details, go to `Admin -> Projects -> Root project -> Cloud Profiles` and pic
 ### To uninstall:
 
 ```sh
-helm uninstall teamcity
+helm --namespace=teamcity-server uninstall teamcity
 ```

@@ -33,7 +33,7 @@ image:
 env:
   server:
     # How many server nodes you want to run
-    REPLICAS: 1
+    REPLICAS: 2
     TEAMCITY_SERVER_MEM_OPTS: "-Xmx16g"
     TEAMCITY_DATA_PATH: "/mnt/data"
     # TEAMCITY_SERVER_OPTS: "-Dteamcity.caches.path=/data/teamcity_server/caches"
