@@ -22,7 +22,7 @@
     </extension>
     <extension id="kube-1" type="CloudProfile">
       <parameters>
-        <param name="apiServerUrl" value="{{ .Values.k8s.api }}" />
+        <param name="apiServerUrl" value="https://${KUBERNETES_SERVICE_HOST}:${KUBERNETES_SERVICE_PORT_HTTPS}" />
         <param name="authStrategy" value="token" />
         <param name="cloud-code" value="kube" />
         <param name="description" value="" />

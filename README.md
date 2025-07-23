@@ -10,13 +10,14 @@ and ingress-nginx (https://github.com/kubernetes/ingress-nginx) installed on you
 
 csi-nfs will introduce a single point of failure - for production, consider using another storage driver, capable of mounting same PV in multiple pods, like https://github.com/ceph/ceph-csi or other HA filesystem
 
-If you don't want ingress - set `ingress.enabled: false` in values.yaml
-
-Edit values.yaml to your favor and
+For quick start with default settings run
 
 ```sh
-helm install teamcity-helm-chart .
+./install.sh
 ```
+
+If you want to customize, edit values.yaml before running `./install.sh`  
+e.g. if you don't want to use ingress - set `ingress.enabled: false`
 
 Until TC server is initialized (this will happen automatically), HAProxy at http://{{ ingress-dns-name }}/ will return `"503 Service Unavailable"` - just wait some time and refresh the page
 
@@ -33,5 +34,5 @@ For details, go to `Admin -> Projects -> Root project -> Cloud Profiles` and pic
 ### To uninstall:
 
 ```sh
-helm uninstall teamcity-helm-chart
+helm uninstall teamcity
 ```

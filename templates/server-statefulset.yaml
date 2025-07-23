@@ -93,7 +93,7 @@ spec:
             - name: SERVER_ADMIN_PASSWORD
               value: {{ .Values.server.admin.password }}
             - name: POSTGRES_HOST
-              value: {{ .Values.postgres.host }}
+              value: {{ include "teamcity.postgres.host" . }}
             - name: POSTGRES_PORT
               value: "{{ .Values.postgres.port }}"
             - name: POSTGRES_DB
@@ -166,7 +166,7 @@ spec:
               value: "{{ $val }}"
             {{- end }}
             - name: "TEAMCITY_DB_URL"
-              value: "jdbc:postgresql://{{ .Values.postgres.host }}:{{ .Values.postgres.port }}/{{ .Values.postgres.db }}"
+              value: jdbc:postgresql://{{ include "teamcity.postgres.host" . }}:{{ .Values.postgres.port }}/{{ .Values.postgres.db }}
             - name: "TEAMCITY_DB_USER"
               valueFrom:
                 secretKeyRef:
