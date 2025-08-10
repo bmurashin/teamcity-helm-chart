@@ -1,0 +1,6 @@
+apiVersion: v2
+name: nfs-server
+description: Deploys an NFS server and defines a StorageClass, capable of mounting with ReadWriteMany access mode
+type: application
+version: 0.1.0
+appVersion: "latest"

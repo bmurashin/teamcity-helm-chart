@@ -1,0 +1,23 @@
+# This template recursively turns resources/<server.dump.version>/server folders into configmaps,
+# saving folder name into annotation, so that server statefulset config-restore init container is
+# able to recursively expand configmaps back to the same directory structure using that annotation
+{{- $processedDict := dict }}
+{{- range $path, $bytes := .Files.Glob (printf "resources/%s/server/**" .Values.server.dump.version ) }}
+{{- $name := (dir $path) }}
+{{- if not (hasKey $processedDict $name) }}
+{{- $_ := set $processedDict $name "true" }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: server-{{ $name | sha1sum }}
+  namespace: {{ $.Values.namespace.server }}
+  labels:
+    {{- include "teamcity.labels" $ | nindent 4 }}
+  annotations:
+    folder: {{ $name | trimPrefix (printf "resources/%s/server/" $.Values.server.dump.version ) }}
+immutable: true
+data:
+{{ tpl ($.Files.Glob (printf "%s/*" $name)).AsConfig $ | indent 2 }}
+---
+{{- end }}
+{{- end }}

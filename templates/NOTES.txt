@@ -1,0 +1,35 @@
+--------------------------------------------------------------------------------
+{{- if ne .Values.server.dump.version .Values.server.image.tag }}
+  Server dump version and server image version differ, manual
+  action for server upgrade required. Execute
+
+      kubectl -n {{ .Values.namespace.server }} logs server-0 -f
+
+  and wait until superuser token shows up
+  Then execute
+
+      kubectl -n {{ .Values.namespace.server }} port-forward svc/nodes 8111
+
+  and go to http://localhost:8111/
+  Use superuser token to login and start server upgrade process
+  {{- if .Values.ingress.enabled }}
+
+  After upgrade TeamCity server web UI will be available at
+  http://{{ .Values.ingress.host }}/
+  {{- end }}
+{{- else }}
+  {{- if .Values.ingress.enabled }}
+  TeamCity server will be automatically initialized in several minutes
+  Wait a little and go to
+      http://{{ .Values.ingress.host }}/
+  to see the web UI
+  {{- else }}
+  You chose not to use ingress
+  To access teamcity installation, you can execute
+
+      kubectl -n {{ .Values.namespace.server }} port-forward svc/nodes 8111
+  
+  and go to http://localhost:8111/
+  {{- end }}
+{{- end }}
+--------------------------------------------------------------------------------

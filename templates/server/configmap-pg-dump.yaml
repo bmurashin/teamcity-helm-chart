@@ -1,0 +1,12 @@
+# This configmap is used by TC server statefulset pg-restore init container to restore a postgres dump
+# taken from initialized TC installation and turned into template
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "teamcity.fullname" . }}-pg-dump
+  namespace: {{ .Values.namespace.server }}
+  labels:
+    {{- include "teamcity.labels" . | nindent 4 }}
+immutable: true
+data:
+{{ (.Files.Glob (printf "resources/%s/postgresql/*" .Values.server.dump.version )).AsConfig | indent 2 }}

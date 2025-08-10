@@ -1,0 +1,15 @@
+# PVC capable of mounting into several pods (ReadWriteMany)
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: server-data
+  namespace: {{ .Values.namespace.server }}
+  labels:
+    {{- include "teamcity.labels" $ | nindent 4 }}
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 2Gi
+  storageClassName: {{ default (index .Values "nfs-server" "storageClassName") .Values.server.storageClassName }}

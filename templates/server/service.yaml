@@ -1,0 +1,16 @@
+# service to access TC server when np ingress is used (or ingress fails for some reason)
+apiVersion: v1
+kind: Service
+metadata:
+  name: nodes
+  namespace: {{ .Values.namespace.server }}
+  labels:
+    app.kubernetes.io/component: server
+    {{- include "teamcity.labels" . | nindent 4 }}
+spec:
+  selector:
+    app.kubernetes.io/component: server
+    {{- include "teamcity.selectorLabels" . | nindent 4 }}
+  ports:
+    - name: teamcity-server
+      port: 8111

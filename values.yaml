@@ -1,56 +1,161 @@
----
+## @section Namespace
+##
 namespace:
-  agent: "teamcity-agent-new"
-  server: "teamcity-server-new"
+  ## @param namespace.agent Namespace for TeamCity agent
+  ##
+  agent: "teamcity-agent"
+  ## @param namespace.server Namespace for TeamCity server
+  ## Will also be used for postgresql and NFS servers, if those are deployed
+  ##
+  server: "teamcity-server"
 
-postgres:
-  # host: defined in _helpers.tpl
-  port: 5432
-  db: teamcity
-  username: teamcity
-  password: teamcity
-  connections: 200
 
+## @section NFS server
+## This doesn't follow the camelCase convention, because it is a subchart name
+## ref: https://github.com/helm/helm/issues/2192
+##
+nfs-server:
+  ## @param nfs-server.deploy Deploy NFS server subchart alongside Teamcity server
+  ##
+  deploy: true
+  ## @param nfs-server.storageClassName A storage class name to be created by the subchart
+  ## Default is "nfs-csi"
+  ##
+  storageClassName: "nfs-csi-ha"
+
+
+## @section Database
+##
+database:
+  ## @param database.type Only Postgresql currently supported by this chart
+  type: "postgresql"
+
+
+## @section Postgresql configuration
+##
+postgresql:
+  ## @param postgresql.deploy Deploy postgresql alongside Teamcity server
+  ## ref: https://github.com/bitnami/charts/blob/main/bitnami/postgresql/values.yaml
+  ##
+  deploy: true
+  ## @param postgresql.host External postgresql host. Ignored if postgresql.deploy is true
+  ##
+  host: ""
+  ## @param postgresql.service.ports.postgresql Postgresql port
+  ## Used as port of an external Postgresql or will be assigned to service if postgresql.deploy is true
+  ##
+  service:
+    ports:
+      postgresql: "5432"
+  ## @param postgresql.image.tag Bitnami Postgresql image version. Ignored if postgresql.deploy is false
+  ## ref: https://hub.docker.com/r/bitnami/postgresql/tags/
+  ##
+  image:
+    tag: "17.5.0-debian-12-r20"
+  ## Authentication parameters
+  ##
+  auth:
+    ## @param postgresql.auth.username Username. User will be created, if postgresql.deploy is true
+    ##
+    username: "teamcity"
+    ## @param postgresql.auth.password User password. Will be set, if postgresql.deploy is true
+    ##
+    password: "teamcity"
+    ## @param postgresql.auth.database Database Name. Will be created, if postgresql.deploy is true
+    ##
+    database: "teamcity"
+    ## @param postgresql.auth.postgresPassword Password to set for the "postgres" admin user. Ignored if postgresql.deploy is false
+    ##
+    postgresPassword: "admin"
+    ## @param postgresql.auth.replicationUsername Name to set for the replication user. Ignored if postgresql.deploy is false
+    ##
+    replicationUsername: repl_user
+    ## @param postgresql.auth.replicationPassword Password to set for the replication user. Ignored if postgresql.deploy is false
+    ##
+    replicationPassword: "repl_pass"
+
+
+## @section Ingress
+##
 ingress:
+  ## @param ingress.enabled
+  ##
   enabled: true
+  host: "localhost"
 
+## @section Server properties
+##
 server:
+  ## @param server.admin Credentials to set for TeamCity server admin user
+  ##
   admin:
-    username: admin
-    password: my-strong-password
-
-image:
-  server:
-    repository: jetbrains/teamcity-server
-    tag: 2025.03.3
-    pullPolicy: Always
-  agent:
-    repository: jetbrains/teamcity-agent
-    tag: latest
-    pullPolicy: Always
-
-
-env:
-  server:
-    # How many server nodes you want to run
+    username: "admin"
+    password: "my-strong-password"
+  dump:
+    ## @param server.dump.version Version of the TeamCity server used to create configs snapshot stored in resources directory
+    ## If this doesn't match the image.tag below, manual action for updating TeamCity server will be required after helm install
+    ## ref: https://www.jetbrains.com/help/teamcity/upgrading-teamcity-server-and-agents.html#Upgrading+TeamCity+Server
+    ##
+    ## If you want to have TC automatically initialized with a newer image.tag, place a new configs snapshot in resources directory
+    ## To do that, deploy this chart with target image.tag, go through server update process (described in README.md and NOTES.txt)
+    ## Take database and server configs snapshot, put it into resources directory of the chart and turn it into template -
+    ## find {{ var }} and __var__ placeholders in existing snapshot to get the idea what is to be templated.
+    ## Don't forget to update version and appVersion in Chart.yaml accordingly
+    version: "2025.03.3"
+  image:
+    repository: "jetbrains/teamcity-server"
+    ## @param server.image.tag Docker image tag for TC server.
+    ## Any version >= dump.version will work, but only matching versions will make TC server initialize automatically
+    ## Using "latest" is bad practice
+    ##
+    # tag: "2025.07"
+    tag: "2025.03.3"
+    pullPolicy: "Always"
+  serviceAccount:
+    ## @param server.serviceAccount.create Whether to create service account, used by TC server to control build agents' pods
+    ## If you prefer to create it manually, don't forget to specify its name in a server.serviceAccount.name field below
+    ##
+    create: true
+    ## @param server.serviceAccount.name Service account name override. Sets the name of created account if serviceAccount.create == true
+    ## Or defines the name of your manually created SA if serviceAccount.create == false (default is "teamcity")
+    ##
+    name: "teamcity"
+  ## @param server.storageClassName A storage class to use for TEAMCITY_DATA_PATH in server pods
+  ## If you want HA deployment with 2+ server replicas, this must support ReadWriteMany access mode
+  ## Default is nfs-server.storageClassName - the name of the StorageClass created by the nfs-server subchart
+  ##
+  # storageClassName: "nfs-csi"
+  env:
+    # How many TC server replicas you want to run
     REPLICAS: 2
+    # JVM heap size for TeamCity server
     TEAMCITY_SERVER_MEM_OPTS: "-Xmx16g"
+    # Data directory path
     TEAMCITY_DATA_PATH: "/mnt/data"
-    # TEAMCITY_SERVER_OPTS: "-Dteamcity.caches.path=/data/teamcity_server/caches"
-    # TEAMCITY_SERVER_OPTS: "-Dteamcity.node.data.path=/mnt/node_data"
     # OPTS to be used if none defined for a specific node
+    # ref: https://www.jetbrains.com/help/teamcity/multinode-setup.html#Setting+Responsibilities+on+the+Command+Line
     TEAMCITY_SERVER_OPTS_DEFAULT:
-      -Dteamcity.server.nodeId=server-${POD_INDEX} -Dteamcity.server.rootURL=http://server-${POD_INDEX}.nodes.${SERVER_NAMESPACE}.svc.cluster.local
+      -Dteamcity.server.nodeId=server-${POD_INDEX} -Dteamcity.server.rootURL=http://server-${POD_INDEX}.nodes-headless.${SERVER_NAMESPACE}.svc.cluster.local
       -Dteamcity.server.responsibilities=CAN_PROCESS_BUILD_MESSAGES,CAN_CHECK_FOR_CHANGES,CAN_PROCESS_BUILD_TRIGGERS,CAN_PROCESS_USER_DATA_MODIFICATION_REQUESTS
     # OPTS to be used for node 0 (zero-based ordinal in the StatefulSet)
     TEAMCITY_SERVER_OPTS_NODE_0:
-      -Dteamcity.server.nodeId=server-${POD_INDEX} -Dteamcity.server.rootURL=http://server-${POD_INDEX}.nodes.${SERVER_NAMESPACE}.svc.cluster.local
+      -Dteamcity.server.nodeId=server-${POD_INDEX} -Dteamcity.server.rootURL=http://server-${POD_INDEX}.nodes-headless.${SERVER_NAMESPACE}.svc.cluster.local
       -Dteamcity.server.responsibilities=CAN_PROCESS_BUILD_MESSAGES,CAN_CHECK_FOR_CHANGES,CAN_PROCESS_BUILD_TRIGGERS,CAN_PROCESS_USER_DATA_MODIFICATION_REQUESTS,MAIN_NODE
     # OPTS to be used for second node
     # TEAMCITY_SERVER_OPTS_NODE_1:
-  agent: {}
 
 
+## @section Agent properties
+##
+agent:
+  image:
+    repository: "jetbrains/teamcity-agent"
+    tag: "latest"
+    pullPolicy: "Always"
+
+
+## @section Resources
+##
 resources:
   server:
     limits:

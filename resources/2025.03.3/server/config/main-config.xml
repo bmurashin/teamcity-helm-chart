@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<server rootURL="http://haproxy.{{ .Values.namespace.server }}.svc.cluster.local">
+<server rootURL="http://{{ include "teamcity.fullname" . }}-haproxy.{{ .Values.namespace.server }}.svc.cluster.local">
   <version number="1021" />
   <git nativeOperationsEnabled="true" />
   <connected-servers />

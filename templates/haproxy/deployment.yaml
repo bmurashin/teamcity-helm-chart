@@ -1,33 +1,22 @@
-apiVersion: v1
-kind: Service
-metadata:
-  name: haproxy
-  namespace: {{ .Values.namespace.server }}
-spec:
-  selector:
-    app: haproxy
-  ports:
-    - name: http
-      port: 80
-    # - name: https
-    #   port: 443
-    
----
-
+{{- /*
+ * Using Deployment as HAProxy is a stateless service
+ */}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: haproxy
+  name: {{ include "teamcity.fullname" . }}-haproxy
   namespace: {{ .Values.namespace.server }}
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: haproxy
+      app.kubernetes.io/component: haproxy
+      {{- include "teamcity.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       labels:
-        app: haproxy
+        app.kubernetes.io/component: haproxy
+        {{- include "teamcity.labels" . | nindent 8 }}
     spec:
       containers:
         - name: haproxy
@@ -42,4 +31,4 @@ spec:
       volumes:
         - name: haproxy-config
           configMap:
-            name: haproxy-config
+            name: {{ include "teamcity.fullname" . }}-haproxy

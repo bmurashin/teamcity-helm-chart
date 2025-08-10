@@ -1,0 +1,7 @@
+## Only server namespace will be created during helm install
+## Creating agents' namespace here
+##
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ .Values.namespace.agent }}

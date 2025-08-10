@@ -1,23 +1,26 @@
----
 {{- if .Values.ingress.enabled }}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: haproxy-ingress
+  name: {{ include "teamcity.fullname" . }}-haproxy
   namespace: {{ .Values.namespace.server }}
+  labels:
+    app.kubernetes.io/component: haproxy
+    {{- include "teamcity.labels" . | nindent 4 }}
   annotations:
     # nginx.ingress.kubernetes.io/rewrite-target: /$1
     # nginx.ingress.kubernetes.io/use-regex: "true"
 spec:
   ingressClassName: nginx
   rules:
-    - http:
+    - host: {{ .Values.ingress.host }}
+      http:
         paths:
           - path: /
             pathType: Prefix
             backend:
               service:
-                name: haproxy
+                name: {{ include "teamcity.fullname" . }}-haproxy
                 port:
                   number: 80            
 {{- end }}

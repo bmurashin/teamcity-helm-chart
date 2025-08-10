@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "teamcity.fullname" . }}-haproxy
+  namespace: {{ .Values.namespace.server }}
+  labels:
+    app.kubernetes.io/component: haproxy
+    {{- include "teamcity.labels" . | nindent 4 }}
+spec:
+  selector:
+    app.kubernetes.io/component: haproxy
+    {{- include "teamcity.selectorLabels" . | nindent 4 }}
+  ports:
+    - name: http
+      port: 80
+    # - name: https
+    #   port: 443

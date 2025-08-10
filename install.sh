@@ -50,6 +50,40 @@ TEAMCITY_AGENT_NAMESPACE=${TEAMCITY_AGENT_NAMESPACE:-teamcity-agent}
 
 
 echo
+echo "Check dependencies"
+echo
+
+# Check if ingress-nginx is installed
+if ! kubectl get ingressclasses nginx 2>/dev/null 1>/dev/null; then
+  echo -n "    ingress-nginx not found, do you want to install it? [Y/n]: ";
+  read INSTALL_INGRESS_NGINX
+  if [ "$INSTALL_INGRESS_NGINX" = "" ] || [ "$INSTALL_INGRESS_NGINX" = "y" ] || [ "$INSTALL_INGRESS_NGINX" = "Y" ]; then
+    echo "    Installing ingress-nginx..."
+    helm upgrade --install ingress-nginx ingress-nginx \
+      --repo https://kubernetes.github.io/ingress-nginx \
+      --namespace ingress-nginx --create-namespace
+  fi
+else
+  echo "    ingress-nginx: OK"
+fi
+
+# Check if csi-driver-nfs is installed
+if ! kubectl get csidrivers nfs.csi.k8s.io 2>/dev/null 1>/dev/null; then
+  echo -n "    csi-driver-nfs not found, do you want to install it? [Y/n]: ";
+  read INSTALL_CSI_DRIVER_NFS
+  if [ "$INSTALL_CSI_DRIVER_NFS" = "" ] || [ "$INSTALL_CSI_DRIVER_NFS" = "y" ] || [ "$INSTALL_CSI_DRIVER_NFS" = "Y" ]; then
+    echo "    Installing csi-driver-nfs..."
+    helm upgrade --install csi-driver-nfs csi-driver-nfs \
+      --namespace kube-system --version 4.11.0 \
+      --repo https://raw.githubusercontent.com/kubernetes-csi/csi-driver-nfs/master/charts
+  fi
+else
+  echo "    csi-driver-nfs: OK"
+fi
+
+
+echo
+helm dependency build
 helm install teamcity . \
   --namespace "${TEAMCITY_SERVER_NAMESPACE}" \
   --create-namespace \
